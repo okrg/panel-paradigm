@@ -1,0 +1,87 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Studio Shed Animation Sequence Rules
+
+This file provides specific animation guidelines for assembling the 10'×12' Signature Series Studio Shed in Blender.
+
+## Animation Preparation
+- Create collection groups for each major component type
+- Use parent-child relationships to control hierarchy
+- Set origin points consistently (bottom center for panels)
+- Use custom properties to track assembly state
+
+## Initial Component Stack
+- Create "delivery pile" at (-5, -5, 0) relative to build site
+- Stack components in reverse assembly order:
+  1. Interior finishing materials (top of stack)
+  2. Roof panels and metal roofing
+  3. Window units
+  4. Door unit
+  5. Wall panels (organized by wall)
+  6. Foundation materials (bottom of stack)
+
+## Foundation Animation (Frames 1-30)
+- Form boards appear and position
+- Concrete "fills" the form from bottom to top
+- Form boards remove after concrete cures
+
+## Wall Assembly Animation (Frames 31-120)
+```python
+# Animation timing offsets per wall
+back_wall_start = 31
+left_wall_start = 61
+right_wall_start = 76
+front_wall_start = 91
+```
+
+- Back wall panels rise first and position
+- Side walls follow, overlapping back wall at corners
+- Front wall assembles last
+- Panels should "float" up with slight physics follow-through
+- Add subtle rotation as panels settle into position
+
+## Window and Door Installation (Frames 121-180)
+- Windows float from stack to openings
+- Apply slight rotation during movement
+- Door unit slides into position with slight bounce on settle
+- Add glint effects to glass during installation
+
+## Roof Construction (Frames 181-300)
+- Outer rafter sections position first (frames 181-200)
+- Intermediate rafters follow in sequence (frames 201-230)
+- Blocking elements between rafters (frames 231-260)
+- A23 brackets appear and connect components (frames 261-280)
+- Roof sheathing lays down in sections (frames 281-300)
+
+## Roofing Installation (Frames 301-360)
+- Corrugated metal panels slide from back to front
+- Each panel overlaps previous by 6" minimum
+- Fasteners appear as small dots at installation points
+- Add subtle reflection change as panels settle
+
+## Interior Finishing (Frames 361-420)
+- Electrical rough-in appears through walls (frames 361-380)
+- Insulation fills wall cavities (frames 381-390)
+- Drywall panels attach to walls (frames 391-410)
+- Flooring material lays down last (frames 411-420)
+
+## Camera Movement
+- Begin with wide establishing shot showing component stack
+- Zoom/pan to follow each major assembly step
+- Include closeup details on key connections
+- End with slow orbit of completed structure
+
+## Timing and Easing
+- Use ease-in for initial movement
+- Slight overshoot at destination points
+- Brief pause between major assembly phases
+- Sync timing with appropriate sound effects
+
+## Special Effects
+- Add small dust/impact particles when panels connect
+- Brief flash highlight for metal fasteners
+- Subtle settling movements after major components placed
+- Optional atmospheric elements (light breeze on trees)

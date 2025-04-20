@@ -1,0 +1,124 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Studio Shed Assembly Sequence
+
+This file documents the precise assembly steps for building the 10'×12' Studio Shed Signature Series in Blender, following the manufacturer's guidelines.
+
+## Pre-Assembly Preparation
+1. Verify all components are available in the "materials stack"
+2. Ensure foundation is level and properly positioned
+3. Organize wall panels by type and position relative to final placement
+4. Sort hardware by type and intended use point
+
+## Wall Panel Assembly Sequence
+
+### Step 1: Back Wall First
+- Start at the higher back corner
+- Stand and position first back wall panel
+- Use shims if needed to ensure level
+- Stand and loose-fit adjacent panels
+- Do not fully secure until all back panels are positioned
+
+### Step 2: Side Wall Connection
+- Position rake wall (side wall) adjacent to back panel
+- Ensure side walls overlap front and back sill plates
+- Loose-fit panels to allow for adjustments
+- Use clamps on top plates to aid alignment
+- Verify corners are square before final attachment
+
+### Step 3: Remaining Back and Side Walls
+- Continue standing and positioning remaining panels
+- Maintain the proper overlap at corners
+- Use methods shown in Fig 5a-7a from assembly guide
+- Add clamps to top plates for alignment
+- Note that front and back top plates will overlap side walls
+
+### Step 4: Front Wall Installation
+- Begin with front-left panel for 36" door configuration
+- Handle panels carefully to protect metal cladding
+- Apply construction adhesive to window flanges as needed
+- Continue with remaining front wall panels
+- Install transom windows along top of front wall
+
+## Window and Door Installation
+
+### Step 1: Window Preparation
+- Remove shipping blocks using T25 torxbit
+- Cover screw holes with zip tape (except bottom flange)
+- Apply adhesive to metal window flanges
+
+### Step 2: Window Installation
+- Install windows into prepared openings
+- Secure according to manufacturer specs
+- Verify operation of operable windows
+
+### Step 3: Door Installation
+- Position door unit in front wall opening
+- Adjust for proper clearance
+- Secure hinges and test operation
+
+## Roof Construction
+
+### Step 1: Outer Rafter Sections
+- From the back, lift into place pre-assembled outer rafter sections
+- Ensure outside face of blocking is flush with wall sheathing
+- Verify longer rafter extension is on front of shed
+- Bottom edge of blocking should be flush with metal cladding
+
+### Step 2: Rafter Bracket Installation
+- Install A23 brackets to top plates with 1.5" teco nails
+- Start at front bracket and move toward back
+- Do not nail down the bracket at back wall yet
+- No A23 brackets needed along front wall
+
+### Step 3: Intermediate Rafters
+- Install intermediate rafter sections with equal spacing (~10.5")
+- Sections may be single, double, or triple pre-assembled
+- Follow methods for securing rafters from Fig 12b-13a
+
+### Step 4: Rafter Blocking
+- Add blocking between rafter sections using 2x material
+- Cut blocking to fit (~10.5")
+- Toe nail using framing nailer
+- Add A23 brackets at back blocking
+- Match angle of blocking to pre-assembled sections
+
+### Step 5: Roof Tie Screws
+- Install 6" rafter tie screws where rafters meet top plate
+- Use metal guide for optimal 22.5° angle
+- Follow Simpson installation guidelines
+
+## Roofing Installation
+
+### Step 1: Roof Underlayment
+- Install roof underlayment working low to high
+- Overlap each row 6" over lower row
+- Use plastic cap nails to secure
+
+### Step 2: Metal Roofing
+- Start at back corner, working to opposite side
+- Overlap panels by two peaks
+- Use #12 × 3/4" neoprene washer screws
+- Install one screw every 4 valleys (~12") along back edge
+- Place screws in valleys where panels overlap
+- Add next row overlapping previous by 6" minimum
+- Align front edge and install screws
+- Only use fasteners provided by Studio Shed
+
+## Interior Finishing
+- Install electrical conduit and outlets
+- Add insulation between studs
+- Attach drywall panels to interior walls
+- Install flooring material
+- Apply trim around windows and doors
+- Complete interior finish details
+
+## Final Inspection
+- Verify all fasteners are properly installed
+- Check window and door operation
+- Ensure roof drainage is correct
+- Test electrical systems
+- Clean up construction materials

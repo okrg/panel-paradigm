@@ -1,0 +1,53 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Studio Shed Environment & World Setup (Blender MCP)
+
+This rule describes how to use Blender MCP to create a realistic environment and lighting for visualizing the Studio Shed construction site.
+
+## World Environment
+- Set the world background to a subtle sky gradient (light blue to white) for daylight realism.
+- Add a ground plane:
+  - Size: 60' x 60' (to provide ample context around the shed)
+  - Material: Slightly rough, medium green (to simulate grass or turf)
+  - Subdivide and add a subtle displacement for natural unevenness.
+- Optionally, add a few low-poly trees or shrubs at the scene periphery for scale and realism.
+
+## Lighting
+- Add a Sun lamp:
+  - Angle: 45° from above and front-right of the shed
+  - Strength: 5.0
+  - Color: Slightly warm (hex #fff6e5)
+  - Enable soft shadows
+- Add an HDRI environment texture for ambient light:
+  - Use a clear sky or light cloud HDRI
+  - Strength: 0.5–1.0
+- Add a secondary fill light (Area or Point):
+  - Position: Opposite the sun, low intensity (0.5–1.0)
+  - Color: Cool white (hex #eaf6ff)
+
+## Camera Setup
+- Main camera:
+  - Position: (20', -20', 12')
+  - Target: Center of the foundation slab (6', 5', 3')
+  - Focal length: 35mm
+- Add a secondary camera for close-up and animation shots.
+
+## Scene Organization
+- Place all environment objects in a collection named `Environment`.
+- Place all lighting objects in a collection named `Lighting`.
+- Keep the world and environment setup separate from building components for easy toggling and rendering.
+
+## Optional Enhancements
+- Add a subtle fog effect for depth (World > Volume > Mist Pass)
+- Add a background image or low-poly mountains for distant horizon
+- Use Eevee or Cycles as the render engine, depending on performance needs
+
+---
+
+**Reference this rule as**:  
+[studio-shed-environment-setup.mdc](mdc:studio-shed-environment-setup.mdc)
+
+This ensures your Blender world is visually appealing and ready for construction animation and rendering.

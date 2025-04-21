@@ -11,7 +11,27 @@
   <div class="w-full max-w-5xl mx-auto p-4">
     <h1 class="text-3xl font-bold mb-4 text-center">Panel Paradigm Visual Experience</h1>
     <div id="threejs-container" class="w-full aspect-video bg-white rounded shadow overflow-hidden"></div>
-    <!-- Future UI controls can go here -->
+    
+    <!-- Future UI Controls 
+    <div class="mt-4 p-4 bg-white rounded shadow" x-data="{ playing: false, currentStructure: 'small-home' }">
+      <div class="flex items-center justify-between">
+        <div class="flex space-x-4">
+          <button class="px-4 py-2 bg-blue-500 text-white rounded" x-on:click="playing = !playing">
+            <span x-text="playing ? 'Pause' : 'Play'"></span>
+          </button>
+          <button class="px-4 py-2 bg-gray-200 rounded">Reset</button>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span>Structure:</span>
+          <select class="p-2 border rounded" x-model="currentStructure">
+            <option value="small-home">Small Home</option>
+            <option value="cabin">Cabin</option>
+            <option value="garage">Garage</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    -->
   </div>
   <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>
   <script src="main.js"></script>

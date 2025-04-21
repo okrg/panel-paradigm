@@ -5,33 +5,17 @@ alwaysApply: false
 ---
 # Workflow & MCP Command Design
 
-This project supports an end-to-end workflow for generating Studio Shed models in Blender using the Blender MCP server ([addon.py](mdc:addon.py)).
+This project supports an end-to-end workflow for generating Studio Shed models in Three.js
 
 ## Workflow Overview
 1. **Asset Analysis & Feature Extraction**
    - Convert hand-drawn blueprints to digital scans.
    - Categorize photos by building size and features.
    - Extract elements: door/window placement, roof pitch, panel dimensions, texture references.
-   - Output a structured JSON command for MCP.
+   - Output a javascript block of code that can be used to generate the component. 
 
-2. **MCP Command Structure**
-   - Use JSON commands to describe the base structure, features, and optimizations:
-     ```json
-     {
-       "base_structure": "Create rectangular prism with dimensions [LENGTH]x[WIDTH]x[HEIGHT]",
-       "features": [
-         "Add doors at [POSITION] using reference image door_01.png",
-         "Place windows using spacing pattern from window_layout_v3.jpg",
-         "Apply lap_siding_texture.png to exterior walls with 0.5x scale"
-       ],
-       "optimizations": [
-         "Simplify joints to basic geometric connections",
-         "Use displacement maps instead of modeling individual boards",
-         "Group wall sections into 'Panel_[N]' collections"
-       ]
-     }
-     ```
-   - Extend the MCP server with handlers for these commands in [addon.py](mdc:addon.py).
+2. **Three.JS Generation Structure**
+   - Use expert knowledge of Three.JS and useful plugins.
 
 3. **Natural Language Prompt Template**
    - Accept prompts like:
@@ -44,7 +28,6 @@ This project supports an end-to-end workflow for generating Studio Shed models i
    - Implement animation logic in MCP handlers.
 
 ## Implementation Notes
-- All command parsing and execution logic should be implemented or extended in [addon.py](mdc:addon.py).
 - Preprocessing (image analysis, prompt parsing) is handled outside Blender; only structured commands are sent to MCP.
 - Asset references (images, textures) should be accessible to Blender and referenced by path in commands.
 

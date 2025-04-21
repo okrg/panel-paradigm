@@ -1,4 +1,8 @@
-// Panel Paradigm Visual Experience - Three.js Bootstrap
+// Panel Paradigm Visual Experience - Three.js Implementation
+
+// This file contains the core Three.js implementation for the Panel Paradigm
+// visualization. We use procedural geometry generation to create and animate
+// panel-based structures without any external 3D modeling dependencies.
 
 // Get the container
 const container = document.getElementById('threejs-container');
@@ -23,12 +27,23 @@ container.appendChild(renderer.domElement);
 const light = new THREE.DirectionalLight(0xffffff, 1);
 light.position.set(5, 10, 7.5);
 scene.add(light);
+// Add ambient light for better overall illumination
+const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+scene.add(ambientLight);
 
 // Example geometry: a simple cube
 const geometry = new THREE.BoxGeometry(1, 1, 1);
 const material = new THREE.MeshLambertMaterial({ color: 0x3b82f6 });
 const cube = new THREE.Mesh(geometry, material);
 scene.add(cube);
+
+// TODO: Replace this cube with panel system components
+// Future implementations will include:
+// 1. Pallet with stacked panels
+// 2. Sequential panel animation from pallet to structure
+// 3. Structure completion animation
+// 4. Structure explosion and panel return
+// 5. Cycling through multiple structure types
 
 // Responsive resize
 window.addEventListener('resize', () => {

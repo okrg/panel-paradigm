@@ -7,13 +7,12 @@ A self-contained, single-page web application that visually demonstrates the ass
 - Three.js-powered geometry and animation
 - Tailwind CSS and Alpine.js for UI and interactivity
 - Modular, embeddable container for future website integration
-- (Advanced) Blender MCP integration for complex model workflows
+- Advanced procedural geometry generation for complex structures
 
 ## Tech Stack
 - HTML, Tailwind CSS, Alpine.js
 - Vanilla JavaScript
 - [Three.js](https://threejs.org/)
-- (Optional) [Blender Model Context Protocol (MCP)](https://mcpmarket.com/server/blender-model-context-protocol)
 
 ## Quick Start
 1. **Clone the repo:**
@@ -36,15 +35,15 @@ A self-contained, single-page web application that visually demonstrates the ass
 ## Usage
 - The main 3D experience is rendered in the container on the page.
 - To add new structures, provide floor plans, elevations, and measurements. See `CLAUDE.md` for workflow details.
-- For advanced modeling, see the [Blender MCP documentation](https://mcpmarket.com/server/blender-model-context-protocol).
+- For complex geometry, we use advanced Three.js features like ExtrudeGeometry and CSG operations.
 
 ## Contributing
 - Open issues or pull requests for improvements, new features, or bug fixes.
-- See `CLAUDE.md` for project goals, workflow, and advanced integration notes.
+- See `CLAUDE.md` for project goals, workflow, and advanced modeling notes.
 
 ## Documentation
 - [CLAUDE.md](./CLAUDE.md): Full project description, workflow, and advanced modeling details
-- [Blender MCP](https://mcpmarket.com/server/blender-model-context-protocol): For AI-assisted 3D modeling
+- [Three.js Documentation](https://threejs.org/docs/): Official Three.js reference
 
 ---
 © 2025 Panel Paradigm. All rights reserved. 

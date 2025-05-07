@@ -1,0 +1,92 @@
+---
+description: Specification for animating the assembly sequence of panelized structures using Three.js, integrating assembly logic and visual animation guidelines.
+globs:
+alwaysApply: false
+---
+
+# Panelized Structure Assembly & Animation Specification (Three.js)
+
+## 1. Overview
+
+This document defines the sequence and animation style for visually demonstrating the assembly of panelized building structures using Three.js, based on the Panel Paradigm concept. The goal is to create a dynamic animation showing components moving from an initial stack to form a complete structure.
+
+## 2. Core Animation Concept
+
+- **Initial State:** All necessary building components (foundation elements, wall panels, roof sections, windows, doors, etc.) are visually represented in a neat "delivery stack" or pile near the virtual build site (e.g., at coordinates relative to the foundation).
+- **Assembly Animation:** Components animate sequentially from the stack to their final position in the structure, following the logical build order.
+- **Completion:** A brief view of the fully assembled structure.
+- **(Optional Phase 2):** Disassembly animation ("explosion" view) where components return to the stack.
+- **(Optional Phase 2):** Cycling through different structure types.
+
+## 3. Component Preparation (Three.js)
+
+- **Geometry:** Procedurally generate Three.js geometry for each unique component based on provided plans/measurements.
+- **Grouping/Hierarchy:** Use Three.js groups or parent-child relationships to manage components logically (e.g., group all back wall panels).
+- **Origin Points:** Define consistent origin points for easy transformation (e.g., bottom-center for wall panels).
+- **Initial Stack:** Position all component geometries in the initial "delivery stack" arrangement, typically in reverse assembly order (last items needed are on the bottom).
+
+## 4. Animation Sequence & Style
+
+This sequence uses the 10'x12' Studio Shed as a reference model but should be adaptable to other panelized structures.
+
+### 4.1. Foundation (e.g., Frames 1-30)
+
+- **Sequence:** Foundation elements (if applicable, e.g., skid foundation components or formwork outlines) appear and position correctly.
+- **Animation:** Elements slide or fade into place. If simulating concrete, a mesh can grow to fill the foundation footprint.
+
+### 4.2. Wall Panel Assembly (e.g., Frames 31-120)
+
+- **Sequence:**
+    1.  **Back Wall:** Panels animate from the stack to the back foundation edge, starting from one corner and proceeding sequentially.
+    2.  **Side Walls:** Panels animate to connect to the back wall corners, ensuring correct overlap if specified (e.g., side walls overlapping front/back sill plates).
+    3.  **Front Wall:** Panels animate last, completing the main wall structure. Include openings for doors/windows.
+- **Animation Style:**
+    - Panels "float" smoothly from the stack to their position.
+    - Use ease-in/ease-out timing.
+    - Add a slight overshoot or bounce upon settling.
+    - Subtle rotation can be added during transit for visual interest.
+    - Relative Timing: Side walls begin animating shortly after the first back wall panels are in place; the front wall begins after the side walls are largely positioned.
+
+### 4.3. Window and Door Installation (e.g., Frames 121-180)
+
+- **Sequence:** Window units and door units animate from the stack into their respective openings in the wall panels.
+- **Animation Style:**
+    - Similar floating motion as wall panels.
+    - A slight "glint" effect can be added to glass surfaces as they move or settle.
+
+### 4.4. Roof Construction (e.g., Frames 181-300)
+
+- **Sequence:**
+    1.  **Rafters/Trusses:** Outer/main roof structural elements (rafters, trusses) animate into position first, often starting from the back or one end.
+    2.  **Intermediate Rafters/Purlins:** Fill in the remaining roof structure sequentially.
+    3.  **Blocking/Supports:** Smaller blocking or support pieces animate into place between main structural elements.
+    4.  **Connectors (Visual):** Small geometries representing brackets or ties can appear briefly at connection points.
+    5.  **Sheathing/Decking:** Roof surface panels (e.g., OSB) animate onto the rafters, typically row by row from bottom to top.
+- **Animation Style:** Similar smooth motion, potentially faster for smaller elements like blocking. Sheathing panels can slide or fade into place.
+
+### 4.5. Roofing Installation (e.g., Frames 301-360)
+
+- **Sequence:** Final roofing material (e.g., metal panels, shingles) animates onto the roof decking.
+    - Metal panels typically install row by row, often starting from a back corner, with appropriate overlap.
+- **Animation Style:**
+    - Panels slide smoothly into place.
+    - Small dots or simple geometries can briefly appear to represent fasteners.
+    - Subtle changes in surface reflection as panels settle.
+
+### 4.6. Interior Finishing (Optional - e.g., Frames 361+)
+
+- **Sequence (Simplified):** If included, show insulation appearing within wall cavities, followed by interior wall surfaces (e.g., drywall panels) animating onto the studs.
+- **Animation Style:** Insulation can "grow" or fade in; wall panels slide/fade into place.
+
+## 5. Camera Movement
+
+- **Start:** Wide establishing shot showing the build site and the initial component stack.
+- **During Assembly:** Dynamically zoom, pan, and orbit to follow the current assembly action. Use close-ups for key connection points or details.
+- **End:** Slow orbit around the completed structure.
+
+## 6. General Animation Principles
+
+- **Timing & Easing:** Use smooth easing functions (e.g., ease-in-out). Allow brief pauses between major phases (walls, roof, etc.).
+- **Physics Feel:** While not a physics simulation, animations should have a sense of weight and momentum (slight overshoot, settle).
+- **Visual Feedback:** Use subtle effects for emphasis (e.g., small particle puff on impact, brief highlight on fasteners).
+- **Clarity:** Ensure the sequence is easy to follow and clearly demonstrates the construction logic.

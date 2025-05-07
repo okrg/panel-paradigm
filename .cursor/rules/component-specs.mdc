@@ -1,0 +1,16 @@
+---
+description: architectural details about the structures to be built in Three.js
+globs: 
+alwaysApply: false
+---
+# Component Specifications
+
+This file provides detailed specs for the OBJ files that make up each model along with a position mapping used to place each pannel in the right location
+
+## Signature 10x12
+
+### Front
+
+### Back
+
+

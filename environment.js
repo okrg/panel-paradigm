@@ -78,10 +78,10 @@ class Environment {
     const groundGeometry = new THREE.PlaneGeometry(60, 60, 32, 32);
     groundGeometry.rotateX(-Math.PI / 2);
     
-    // Add subtle displacement for natural unevenness
+    // Add subtle displacement for natural unevenness (with smaller factor)
     const positionAttribute = groundGeometry.getAttribute('position');
     for (let i = 0; i < positionAttribute.count; i++) {
-      const y = 0.3 * Math.random();
+      const y = 0.03 * Math.random(); // Smaller factor for subtlety
       positionAttribute.setY(i, y);
     }
     groundGeometry.computeVertexNormals();
@@ -95,6 +95,7 @@ class Environment {
     
     const ground = new THREE.Mesh(groundGeometry, groundMaterial);
     ground.receiveShadow = true;
+    ground.position.set(0, -0.08, 0); // Keep base position below foundation
     this.environmentGroup.add(ground);
     
     return ground;
@@ -184,6 +185,38 @@ class Environment {
     return controls;
   }
 
+  setupAxes() {
+    const axesHelper = new THREE.AxesHelper(10); // Scaled axes
+    this.scene.add(axesHelper);
+
+    // Add labels for each axis
+    const loader = new THREE.TextureLoader();
+    const createLabel = (text, color) => {
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      context.font = 'Bold 20px Arial';
+      context.fillStyle = color;
+      context.fillText(text, 0, 20);
+      const texture = new THREE.CanvasTexture(canvas);
+      const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+      return new THREE.Sprite(spriteMaterial);
+    };
+
+    const xLabel = createLabel('X', 'red');
+    xLabel.position.set(11, 0, 0);
+    this.scene.add(xLabel);
+
+    const yLabel = createLabel('Y', 'green');
+    yLabel.position.set(0, 11, 0);
+    this.scene.add(yLabel);
+
+    const zLabel = createLabel('Z', 'blue');
+    zLabel.position.set(0, 0, 11);
+    this.scene.add(zLabel);
+
+    return axesHelper;
+  }
+
   // Initialize the entire environment
   init() {
     this.setupSky();
@@ -191,6 +224,7 @@ class Environment {
     this.setupTrees();
     this.setupLighting();
     this.setupFog();
+    this.setupAxes(); // Add axes to the scene
     const controls = this.setupControls();
     
     // Return controls for animation loop updates

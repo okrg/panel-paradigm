@@ -1,8 +1,11 @@
 // Panel Paradigm Visual Experience - Three.js Implementation
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import Environment from './environment.js';
+import { createFoundation } from './foundation.js';
 
 // This file contains the core Three.js implementation for the Panel Paradigm
-// visualization. We use procedural geometry generation to create and animate
-// panel-based structures without any external 3D modeling dependencies.
+// visualization.
 
 // Get the container
 const container = document.getElementById('threejs-container');
@@ -11,39 +14,27 @@ const height = container.clientHeight;
 
 // Scene setup
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xf8fafc);
+scene.background = new THREE.Color(0xf8fafc); // Light grey-ish background
 
 // Camera
 const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-camera.position.set(4, 3, 6);
+camera.position.set(4, 3, 6); // Slightly elevated side view
 camera.lookAt(0, 0, 0);
 
 // Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(width, height);
+renderer.shadowMap.enabled = true; // Enable shadows
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 container.appendChild(renderer.domElement);
 
-// Lighting
-const light = new THREE.DirectionalLight(0xffffff, 1);
-light.position.set(5, 10, 7.5);
-scene.add(light);
-// Add ambient light for better overall illumination
-const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
-scene.add(ambientLight);
+// Initialize environment (lights, floor, etc.)
+const environment = new Environment(scene, renderer, camera);
+const controls = environment.init();
 
-// Example geometry: a simple cube
-const geometry = new THREE.BoxGeometry(1, 1, 1);
-const material = new THREE.MeshLambertMaterial({ color: 0x3b82f6 });
-const cube = new THREE.Mesh(geometry, material);
-scene.add(cube);
-
-// TODO: Replace this cube with panel system components
-// Future implementations will include:
-// 1. Pallet with stacked panels
-// 2. Sequential panel animation from pallet to structure
-// 3. Structure completion animation
-// 4. Structure explosion and panel return
-// 5. Cycling through multiple structure types
+// Create and add foundation
+const foundationMesh = createFoundation();
+scene.add(foundationMesh);
 
 // Responsive resize
 window.addEventListener('resize', () => {
@@ -57,7 +48,10 @@ window.addEventListener('resize', () => {
 // Animation loop
 function animate() {
   requestAnimationFrame(animate);
-  cube.rotation.y += 0.01;
+  
+  // Update controls
+  if (controls) controls.update();
+  
   renderer.render(scene, camera);
 }
-animate(); 
+animate();

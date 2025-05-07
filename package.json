@@ -4,15 +4,18 @@
   "description": "Panel Paradigm Visual Experience - 3D panelized building system demo using Three.js, Tailwind, Alpine.js.",
   "main": "main.js",
   "scripts": {
-    "dev": "serve .",
+    "dev": "npm-run-all --parallel dev:css dev:serve",
+    "dev:css": "tailwindcss -i ./input.css -o ./output.css --watch",
+    "dev:serve": "serve .",
     "build:css": "tailwindcss -i ./input.css -o ./output.css --minify"
   },
   "dependencies": {
     "three": "^0.157.0"
   },
   "devDependencies": {
+    "serve": "^14.2.0",
     "tailwindcss": "^3.4.1",
-    "serve": "^14.2.0"
+    "npm-run-all": "^4.1.5"
   },
   "keywords": [
     "threejs",
@@ -24,4 +27,4 @@
   ],
   "author": "",
   "license": "MIT"
-} 
+}

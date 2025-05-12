@@ -1,19 +1,18 @@
 import * as THREE from 'three';
 
-// Dimensions (converted from Imperial)
-const FOUNDATION_WIDTH = 3.6576;  // 12 feet
-const FOUNDATION_HEIGHT = 0.1524; // 6 inches
-const FOUNDATION_DEPTH = 3.048;   // 10 feet
+// Dimensions (scaled up to match model sizes)
+const FOUNDATION_HEIGHT = 6;   // 6 inches scaled up
+
 
 /**
  * Creates the foundation geometry and mesh.
  * @returns {THREE.Mesh} The foundation mesh.
  */
-export function createFoundation() {
+export function createFoundation(depth, width) {
   const geometry = new THREE.BoxGeometry(
-    FOUNDATION_WIDTH,
+    width,
     FOUNDATION_HEIGHT,
-    FOUNDATION_DEPTH
+    depth
   );
 
   const material = new THREE.MeshStandardMaterial({
@@ -25,9 +24,8 @@ export function createFoundation() {
   const foundationMesh = new THREE.Mesh(geometry, material);
   foundationMesh.name = 'foundation';
 
-  // Position the mesh so its top surface is at Y=0 (optional, depends on preference)
-  // Centered by default, so bottom is at -H/2, top is at +H/2
-  // foundationMesh.position.set(0, FOUNDATION_HEIGHT / 2, 0); 
+  // Position the mesh so its top surface is at Y=0
+  foundationMesh.position.set(0, -FOUNDATION_HEIGHT / 2, 0); 
 
   foundationMesh.receiveShadow = true; // Allow shadows on the foundation
 

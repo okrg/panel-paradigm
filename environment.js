@@ -75,13 +75,13 @@ class Environment {
 
   setupGround() {
     // Create large ground plane
-    const groundGeometry = new THREE.PlaneGeometry(60, 60, 32, 32);
+    const groundGeometry = new THREE.PlaneGeometry(2000, 2000, 32, 32);
     groundGeometry.rotateX(-Math.PI / 2);
     
-    // Add subtle displacement for natural unevenness (with smaller factor)
+    // Add subtle displacement for natural unevenness
     const positionAttribute = groundGeometry.getAttribute('position');
     for (let i = 0; i < positionAttribute.count; i++) {
-      const y = 0.03 * Math.random(); // Smaller factor for subtlety
+      const y = 1.2 * Math.random(); // Scaled up displacement
       positionAttribute.setY(i, y);
     }
     groundGeometry.computeVertexNormals();
@@ -95,7 +95,7 @@ class Environment {
     
     const ground = new THREE.Mesh(groundGeometry, groundMaterial);
     ground.receiveShadow = true;
-    ground.position.set(0, -0.08, 0); // Keep base position below foundation
+    ground.position.set(0, -3, 0); // Adjusted base position
     this.environmentGroup.add(ground);
     
     return ground;
@@ -137,49 +137,49 @@ class Environment {
 
   setupLighting() {
     // Main directional light (sun)
-    const sunLight = new THREE.DirectionalLight(0xfff6e5, 5.0); // Warm sunlight
-    sunLight.position.set(15, 20, 15); // 45° angle from above
+    const sunLight = new THREE.DirectionalLight(0xfff6e5, 5.0);
+    sunLight.position.set(150, 200, 150);
     sunLight.castShadow = true;
     
-    // Configure shadow properties
-    sunLight.shadow.mapSize.width = 2048;
-    sunLight.shadow.mapSize.height = 2048;
-    sunLight.shadow.camera.near = 0.5;
-    sunLight.shadow.camera.far = 50;
-    sunLight.shadow.camera.left = -20;
-    sunLight.shadow.camera.right = 20;
-    sunLight.shadow.camera.top = 20;
-    sunLight.shadow.camera.bottom = -20;
+    // Configure shadow properties for larger scene
+    sunLight.shadow.mapSize.width = 4096;
+    sunLight.shadow.mapSize.height = 4096;
+    sunLight.shadow.camera.near = 5;
+    sunLight.shadow.camera.far = 500;
+    sunLight.shadow.camera.left = -200;
+    sunLight.shadow.camera.right = 200;
+    sunLight.shadow.camera.top = 200;
+    sunLight.shadow.camera.bottom = -200;
     sunLight.shadow.bias = -0.0005;
     
     this.lightingGroup.add(sunLight);
     
     // Ambient light for general illumination
-    const ambientLight = new THREE.AmbientLight(0xeaf6ff, 0.7); // Cool white ambient
+    const ambientLight = new THREE.AmbientLight(0xeaf6ff, 0.7);
     this.lightingGroup.add(ambientLight);
     
     // Fill light from opposite side
-    const fillLight = new THREE.PointLight(0xeaf6ff, 0.5); // Cool white fill
-    fillLight.position.set(-15, 5, -15); // Opposite the sun
+    const fillLight = new THREE.PointLight(0xeaf6ff, 0.5);
+    fillLight.position.set(-150, 50, -150);
     this.lightingGroup.add(fillLight);
     
     return { sunLight, ambientLight, fillLight };
   }
 
   setupFog() {
-    // Add exponential fog for distance fade
-    this.scene.fog = new THREE.FogExp2(0xdfe9f3, 0.005);
+    // Add exponential fog with adjusted density for larger scene
+    this.scene.fog = new THREE.FogExp2(0xdfe9f3, 0.0005);
     return this.scene.fog;
   }
 
   setupControls() {
-    // Add orbit controls for interactive camera
+    // Add orbit controls with adjusted distances for larger scene
     const controls = new OrbitControls(this.camera, this.renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
     controls.screenSpacePanning = false;
-    controls.minDistance = 5;
-    controls.maxDistance = 50;
+    controls.minDistance = 50;
+    controls.maxDistance = 500;
     controls.maxPolarAngle = Math.PI / 2;
     
     return controls;

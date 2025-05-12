@@ -1,230 +1,181 @@
 import * as THREE from 'three';
 
-// Utility: Generate a procedural wood texture using CanvasTexture
-function createWoodTexture({
-  width = 512,
-  height = 512,
-  baseColor = '#b07d4a',
-  ringColor = '#8c5a2b',
-  ringCount = 20,
-  noise = 0.15
-} = {}) {
-  const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext('2d');
+// List of forbidden strings that will cause meshes to be removed
+const FORBIDDEN_MESH_STRINGS = [
+  'plank_siding',
+  'block_siding',
+  'wood_texture_metal',
+  'metal_wainscot',
+];
 
-  // Fill base
-  ctx.fillStyle = baseColor;
-  ctx.fillRect(0, 0, width, height);
+// List of mesh name strings and their corresponding materials
+const MESH_MATERIAL_MAPPINGS = {
+  'eave_rafter': 'eave_rafter_material',
+  'eave_plywood': 'eave_plywood_material',
+};
 
-  // Draw rings
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const dx = x - width / 2;
-      const dy = y - height / 2;
-      let r = Math.sqrt(dx * dx + dy * dy);
-      r += Math.sin((x + y) * 0.05) * noise * width;
-      const ring = Math.floor(r / (width / (2 * ringCount)));
-      if (ring % 2 === 0) {
-        ctx.fillStyle = ringColor;
-        ctx.globalAlpha = 0.08;
-        ctx.fillRect(x, y, 1, 1);
-      }
-    }
-  }
-  ctx.globalAlpha = 1.0;
-  return new THREE.CanvasTexture(canvas);
+// Utility: Check if a mesh name contains any forbidden strings
+export function shouldRemoveMesh(meshName) {
+  if (!meshName) return false;
+  return FORBIDDEN_MESH_STRINGS.some(forbidden => meshName.includes(forbidden));
 }
 
-// Utility: Generate a procedural corrugated metal normal map using CanvasTexture
-function createCorrugatedNormalTexture({
-  width = 512,
-  height = 512,
-  frequency = 16,
-  amplitude = 0.5
-} = {}) {
-  const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext('2d');
-
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      // Simulate normal map for corrugation
-      const v = Math.sin((x / width) * frequency * Math.PI * 2);
-      // Normal map: (0.5, 0.5 + v * amplitude, 1.0)
-      const r = 128;
-      const g = 128 + Math.floor(v * amplitude * 127);
-      const b = 255;
-      ctx.fillStyle = `rgb(${r},${g},${b})`;
-      ctx.fillRect(x, y, 1, 1);
+// Utility: Get material name for a mesh based on its name
+export function getMaterialForMesh(meshName) {
+  if (!meshName) return null;
+  
+  for (const [meshString, materialName] of Object.entries(MESH_MATERIAL_MAPPINGS)) {
+    if (meshName.includes(meshString)) {
+      return materialName;
     }
   }
-  return new THREE.CanvasTexture(canvas);
+  
+  return null;
 }
 
-// Utility: Glass material (physically-based, no texture)
-function createGlassMaterial() {
-  return new THREE.MeshPhysicalMaterial({
-    color: 0xffffff,
-    metalness: 0,
+// Main material dictionary generator
+export function getMaterials() {
+  const materials = {};
+
+  // Procedural wood plank texture (red horizontal planks)
+  function createWoodPlankTexture({
+    width = 512, height = 512, plankCount = 6, plankColor = '#8B2D24', gapColor = '#e5ded7', gapHeight = 6, shadowAlpha = 0.10, repeatY = 1 } = {}) {
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+
+    // Fill background with plank color
+    ctx.fillStyle = plankColor;
+    ctx.fillRect(0, 0, width, height);
+
+    // Draw horizontal plank gaps and subtle shadow
+    const plankHeight = height / plankCount;
+    for (let i = 1; i < plankCount; ++i) {
+      const y = Math.round(i * plankHeight);
+      // Gap line
+      ctx.fillStyle = gapColor;
+      ctx.fillRect(0, y - gapHeight / 2, width, gapHeight);
+      // Shadow below gap
+      ctx.save();
+      ctx.globalAlpha = shadowAlpha;
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, y + gapHeight / 2, width, gapHeight * 2);
+      ctx.restore();
+    }
+
+    ctx.globalAlpha = 1.0;
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(1, 
+        
+    );
+    texture.anisotropy = 4;
+    return texture;
+  }
+
+  const wood_texture = new THREE.TextureLoader().load('cedar-plank.jpg');
+  wood_texture.wrapS = THREE.RepeatWrapping;
+  wood_texture.wrapT = THREE.RepeatWrapping;
+  wood_texture.repeat.set(0.0075, 0.05); // uScale, vScale from Babylon.js
+
+  materials['wood_texture'] = new THREE.MeshStandardMaterial({
+    map: wood_texture,
+    color: new THREE.Color('#ffb890'), // Lighter warm orange tint
+    roughness: 0.8,
+    metalness: 0.0,
+  });
+
+  // Eave rafter material (exposed wood beam)
+  const rafter_texture = new THREE.TextureLoader().load('cedar-plank.jpg');
+  rafter_texture.wrapS = THREE.RepeatWrapping;s
+  rafter_texture.wrapT = THREE.RepeatWrapping;
+  rafter_texture.repeat.set(0.01, 0.1); // Different scale for beams
+  
+  materials['eave_rafter'] = new THREE.MeshStandardMaterial({
+    map: rafter_texture,
+    color: new THREE.Color('#d9bc8c'), // Light golden wood tone
+    roughness: 0.9,
+    metalness: 0.0,
+  });
+
+  // Eave plywood material (soffit/underlayment)
+  const plywood_texture = new THREE.TextureLoader().load('cedar-plank.jpg');
+  plywood_texture.wrapS = THREE.RepeatWrapping;
+  plywood_texture.wrapT = THREE.RepeatWrapping;
+  plywood_texture.repeat.set(0.1, 0.1); // More square pattern for plywood
+  
+  materials['eave_plywood'] = new THREE.MeshStandardMaterial({
+    map: plywood_texture,
+    color: new THREE.Color('#e5d3b8'), // Very light tan/beige
+    roughness: 0.85,
+    metalness: 0.0,
+  });
+
+  // Simple color groups (trim, accent, etc)
+  materials['trim_color'] = new THREE.MeshStandardMaterial({ 
+    color: new THREE.Color('rgb(225, 230, 235)'), // Much brighter, almost white silvery color
+    metalness: 0.5,  // Moderate metalness to maintain the aluminum look but allow color to show
+    roughness: 0.2   // Lower roughness for more shine but not mirror-like
+  });
+  
+  materials['accent_color'] = new THREE.MeshStandardMaterial({ 
+    color: 0x888888, 
+    roughness: 0.4, 
+    metalness: 0.05 
+  });
+  
+  materials['door_color'] = new THREE.MeshStandardMaterial({ 
+    color: 0xffffff, // Pure white color for doors
+    roughness: 0.3, 
+    metalness: 0.0 
+  });
+
+  // Interior (matte black)
+  materials['Interior'] = new THREE.MeshStandardMaterial({ 
+    color: 0x111111, 
+    roughness: 0.8, 
+    metalness: 0.05 
+  });
+
+  // Glass - light blue-green tint
+  materials['glass'] = new THREE.MeshPhysicalMaterial({
+    color: new THREE.Color('rgb(210, 230, 240)'), // Light blue-green glass color
+    metalness: 0.1,
     roughness: 0.05,
-    transmission: 0.95, // true glass
+    transmission: 0.95, 
     thickness: 0.5,
     ior: 1.5,
     transparent: true,
-    opacity: 0.25,
+    opacity: 0.25, // Matching your Babylon.js alpha setting
     reflectivity: 0.5,
     clearcoat: 1.0,
     clearcoatRoughness: 0.05,
     envMapIntensity: 1.0,
   });
-}
-
-// Utility: Plank pattern (simple stripes)
-function createPlankTexture({
-  width = 512,
-  height = 512,
-  plankCount = 8,
-  color1 = '#b07d4a',
-  color2 = '#8c5a2b'
-} = {}) {
-  const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext('2d');
-  const plankWidth = width / plankCount;
-  for (let i = 0; i < plankCount; i++) {
-    ctx.fillStyle = i % 2 === 0 ? color1 : color2;
-    ctx.fillRect(i * plankWidth, 0, plankWidth, height);
-  }
-  return new THREE.CanvasTexture(canvas);
-}
-
-// Utility: Set color on a MeshStandardMaterial (hex or rgb string)
-function setMaterialColor(material, color) {
-  if (!material) return;
-  if (typeof color === 'string' && color.startsWith('rgb')) {
-    // Convert rgb(r,g,b) to hex
-    const rgb = color.match(/\d+/g).map(Number);
-    material.color.setRGB(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255);
-  } else {
-    material.color.set(color);
-  }
-}
-
-// List of material groups (as in Babylon code)
-const materialGroups = [
-  'block_siding_metal_fastener',
-  'wood_texture_metal_color',
-  'wood_texture_metal_trims',
-  'block_siding_metal_color',
-  'block_siding_metal_trims',
-  'plank_siding_metal_trims',
-  'plank_siding_metal_color',
-  'plank_siding_color',
-  'block_siding_fastener',
-  'wood_texture_color',
-  'wood_texture_metal',
-  'wood_texture_trims',
-  'block_siding_color',
-  'block_siding_trims',
-  'block_siding_metal',
-  'plank_siding_trims',
-  'plank_siding_color',
-  'plank_siding_metal',
-  'metal_wainscot1',
-  'window_exterior',
-  'metal_wainscot',
-  'wood_texture',
-  'block_siding',
-  'plank_siding',
-  'accent_color',
-  'eave_plywood',
-  'plank_trims',
-  'roof_fascia',
-  'eave_rafter',
-  'plank_trim',
-  'trim_color',
-  'door_color',
-  'roof_metal',
-  'lifestyle',
-  'sheathing',
-  'roof_eave',
-  'Interior',
-  'framing',
-  'pergola', 'lumber', 'awning', 'glass'
-];
-
-// Main material dictionary generator
-export function getMaterials() {
-  // Define all group names as in Babylon.js
-  const materials = {};
-
-  // Wood (for wood_texture, lumber, etc)
-  const woodTexture = createWoodTexture();
-  materials['wood_texture'] = new THREE.MeshStandardMaterial({
-    map: woodTexture,
-    roughness: 0.6,
-    metalness: 0.1,
-  });
-  materials['lumber'] = new THREE.MeshStandardMaterial({
-    map: woodTexture,
-    roughness: 0.7,
-    metalness: 0.05,
-  });
-
-  // Plank siding
-  const plankTexture = createPlankTexture();
-  materials['plank_siding'] = new THREE.MeshStandardMaterial({
-    map: plankTexture,
-    roughness: 0.5,
-    metalness: 0.1,
-  });
-  materials['plank_siding_color'] = new THREE.MeshStandardMaterial({
-    map: plankTexture,
-    roughness: 0.5,
-    metalness: 0.1,
-  });
-
-  // Corrugated metal (roof, siding)
-  const corrugatedNormal = createCorrugatedNormalTexture();
-  materials['roof_metal'] = new THREE.MeshStandardMaterial({
-    color: 0x9b9e9e,
-    metalness: 1.0,
-    roughness: 0.3,
-    normalMap: corrugatedNormal,
-  });
-  materials['block_siding_metal'] = new THREE.MeshStandardMaterial({
-    color: 0x9b9e9e,
-    metalness: 1.0,
-    roughness: 0.4,
-    normalMap: corrugatedNormal,
-  });
-
-  // Glass
-  materials['glass'] = createGlassMaterial();
-
-  // Simple color groups (trim, accent, etc)
-  // trim_color: aluminum (from blissHarp.js: rgb(155, 158, 158)), metallic look
-  materials['trim_color'] = new THREE.MeshStandardMaterial({ color: 0x9b9e9e, metalness: 0.8, roughness: 0.25 });
-  materials['accent_color'] = new THREE.MeshStandardMaterial({ color: 0x888888, roughness: 0.4, metalness: 0.05 });
-  materials['door_color'] = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.4, metalness: 0.05 });
-
-  // Interior (matte black)
-  materials['Interior'] = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.8, metalness: 0.05 });
 
   // Appliance (matte silver)
-  materials['appliance'] = new THREE.MeshStandardMaterial({ color: 0xcfd4d9, roughness: 0.3, metalness: 0.7 });
+  materials['appliance'] = new THREE.MeshStandardMaterial({ 
+    color: 0xcfd4d9, 
+    roughness: 0.3, 
+    metalness: 0.7 
+  });
 
   // Countertop (light gray)
-  materials['countertop'] = new THREE.MeshStandardMaterial({ color: 0xe0e0e0, roughness: 0.5, metalness: 0.2 });
+  materials['countertop'] = new THREE.MeshStandardMaterial({ 
+    color: 0xe0e0e0, 
+    roughness: 0.5, 
+    metalness: 0.2 
+  });
 
   // Cabinet (white)
-  materials['cabinet'] = new THREE.MeshStandardMaterial({ color: 0xf5f1ee, roughness: 0.4, metalness: 0.1 });
-
-  // Add more as needed for all group names...
+  materials['cabinet'] = new THREE.MeshStandardMaterial({ 
+    color: 0xf5f1ee, 
+    roughness: 0.4, 
+    metalness: 0.1 
+  });
 
   return materials;
 } 

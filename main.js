@@ -44,7 +44,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import Environment from './environment.js';
 import { createFoundation } from './foundation.js';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
-import { getMaterials } from './materials.js';
+import { getMaterials, shouldRemoveMesh } from './materials.js';
 
 // This file contains the core Three.js implementation for the Panel Paradigm
 // visualization.
@@ -106,8 +106,7 @@ const MATERIAL_GROUPS = [
   'block_siding_trims',
   'block_siding',
   'trim_color',
-  'accent_color',
-  'metal_wainscot1',
+  'accent_color',  
   'metal_wainscot',
   'lifestyle',
   'lumber',
@@ -229,10 +228,18 @@ async function loadAndPositionPanel({
         obj.position.set(position.x, position.y, position.z);
         obj.rotation.set(rotation.x, rotation.y, rotation.z);
         obj.name = name;
-        // Debug: List all mesh names in this OBJ
-        //listMeshNames(obj, file);
+
+        // Create a list to store meshes that should be removed
+        const meshesToRemove = [];
+        
         obj.traverse((child) => {
           if (child.isMesh) {
+            // Check if this mesh should be removed
+            if (shouldRemoveMesh(child.name)) {
+              console.log('Filtering out mesh:', child.name);
+              meshesToRemove.push(child);
+              return; // Skip material assignment for meshes that will be removed
+            }
     
             child.castShadow = true;
             child.receiveShadow = receiveShadow;
@@ -254,9 +261,16 @@ async function loadAndPositionPanel({
                 }
               }
             }
-
           }
         });
+
+        // Remove the filtered meshes
+        meshesToRemove.forEach(mesh => {
+          if (mesh.parent) {
+            mesh.parent.remove(mesh);
+          }
+        });
+
         scene.add(obj);
         resolve(obj);
       },
@@ -373,22 +387,79 @@ function showMeshGroupOverlay(groups) {
 }
 
 renderer.domElement.addEventListener('click', (event) => {
-  // Calculate mouse position in normalized device coordinates
   const rect = renderer.domElement.getBoundingClientRect();
   mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
   mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
   raycaster.setFromCamera(mouse, camera);
   const intersects = raycaster.intersectObjects(scene.children, true);
+  
   if (intersects.length > 0) {
     const mesh = intersects[0].object;
     if (mesh) {
-      // Find all groups this mesh belongs to
-      const groups = Object.entries(meshGroups)
-        .filter(([group, arr]) => arr.includes(mesh))
-        .map(([group]) => group);
-      console.log('Clicked mesh groups:', groups, 'for mesh', mesh.name);
-      showMeshGroupOverlay(groups);
+      const meshName = mesh.name || '(unnamed mesh)';
+      
+      if (event.shiftKey) {
+        // Shift + Click: Remove the mesh
+        console.log('Removing mesh:', meshName);
+        mesh.parent.remove(mesh);
+        // Show removal confirmation
+        let overlay = document.getElementById('mesh-name-overlay');
+        if (!overlay) {
+          overlay = document.createElement('div');
+          overlay.id = 'mesh-name-overlay';
+          overlay.style.position = 'fixed';
+          overlay.style.top = '-60px';
+          overlay.style.left = '50%';
+          overlay.style.transform = 'translateX(-50%)';
+          overlay.style.background = 'rgba(255,0,0,0.95)';
+          overlay.style.color = '#fff';
+          overlay.style.fontSize = '2rem';
+          overlay.style.padding = '16px 32px';
+          overlay.style.borderRadius = '8px';
+          overlay.style.zIndex = '9999';
+          overlay.style.transition = 'top 0.3s cubic-bezier(.4,2,.6,1), opacity 0.5s';
+          overlay.style.opacity = '0';
+          document.body.appendChild(overlay);
+        }
+        overlay.textContent = `Removed: ${meshName}`;
+        overlay.style.background = 'rgba(255,0,0,0.95)';
+        overlay.style.top = '32px';
+        overlay.style.opacity = '1';
+        setTimeout(() => {
+          overlay.style.top = '-60px';
+          overlay.style.opacity = '0';
+        }, 1800);
+      } else {
+        // Regular Click: Show mesh name
+        console.log('Clicked mesh:', meshName);
+        let overlay = document.getElementById('mesh-name-overlay');
+        if (!overlay) {
+          overlay = document.createElement('div');
+          overlay.id = 'mesh-name-overlay';
+          overlay.style.position = 'fixed';
+          overlay.style.top = '-60px';
+          overlay.style.left = '50%';
+          overlay.style.transform = 'translateX(-50%)';
+          overlay.style.background = 'rgba(30,30,30,0.95)';
+          overlay.style.color = '#fff';
+          overlay.style.fontSize = '2rem';
+          overlay.style.padding = '16px 32px';
+          overlay.style.borderRadius = '8px';
+          overlay.style.zIndex = '9999';
+          overlay.style.transition = 'top 0.3s cubic-bezier(.4,2,.6,1), opacity 0.5s';
+          overlay.style.opacity = '0';
+          document.body.appendChild(overlay);
+        }
+        overlay.textContent = `Mesh: ${meshName}`;
+        overlay.style.background = 'rgba(30,30,30,0.95)';
+        overlay.style.top = '32px';
+        overlay.style.opacity = '1';
+        setTimeout(() => {
+          overlay.style.top = '-60px';
+          overlay.style.opacity = '0';
+        }, 1800);
+      }
     }
   }
 });

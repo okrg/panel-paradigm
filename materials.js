@@ -69,9 +69,7 @@ export function getMaterials() {
     const texture = new THREE.CanvasTexture(canvas);
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(1, 
-        
-    );
+    texture.repeat.set(1, repeatY);
     texture.anisotropy = 4;
     return texture;
   }
@@ -90,7 +88,7 @@ export function getMaterials() {
 
   // Eave rafter material (exposed wood beam)
   const rafter_texture = new THREE.TextureLoader().load('cedar-plank.jpg');
-  rafter_texture.wrapS = THREE.RepeatWrapping;s
+  rafter_texture.wrapS = THREE.RepeatWrapping;
   rafter_texture.wrapT = THREE.RepeatWrapping;
   rafter_texture.repeat.set(0.01, 0.1); // Different scale for beams
   
@@ -116,9 +114,9 @@ export function getMaterials() {
 
   // Simple color groups (trim, accent, etc)
   materials['trim_color'] = new THREE.MeshStandardMaterial({ 
-    color: new THREE.Color('rgb(225, 230, 235)'), // Much brighter, almost white silvery color
-    metalness: 0.5,  // Moderate metalness to maintain the aluminum look but allow color to show
-    roughness: 0.2   // Lower roughness for more shine but not mirror-like
+    color: new THREE.Color('rgb(210, 210, 210)'), // Lighter grey for silver/aluminum
+    metalness: 0.9,  
+    roughness: 0.6   // Keep roughness for duller reflections
   });
   
   materials['accent_color'] = new THREE.MeshStandardMaterial({ 

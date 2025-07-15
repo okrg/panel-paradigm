@@ -1,43 +1,3 @@
-/*
-Signature 10 x 12 recipe
-{
-    "model": "signature",    
-    "size": "10x12",
-    "depth": 10,
-    "length": 12,
-    "roof": "/obj/signature/roof/10x12-STE-06F.obj",
-    "front": {
-        "obj": "/obj/signature/front/F12-W2L-D72C-W2R.obj",
-        "width": 144,
-        "x": -68,
-        "y": -9,
-        "z": 60
-    },
-    "back": {
-        "obj": "/obj/signature/back/B10x12.obj",
-        "width": 144,
-        "x": -68,
-        "y": -9,
-        "z": -59.5
-    },
-    "left": {
-        "obj": "/obj/signature/left/L10-36C-W2R.obj",
-        "width": 120,
-        "x": -71.5,
-        "y": -9,
-        "z": -60
-    },
-    "right": {
-        "obj": "/obj/signature/right/R10-W2L-36C.obj",
-        "width": 120,
-        "x": 71.5,
-        "y": -9,
-        "z": 60
-    },    
-}
-
-*/
-
 // Panel Paradigm Visual Experience - Three.js Implementation
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
@@ -70,6 +30,7 @@ const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(width, height);
 renderer.shadowMap.enabled = true; // Enable shadows
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.localClippingEnabled = true; // Enable Clipping
 container.appendChild(renderer.domElement);
 
 // Initialize environment (lights, floor, etc.)
@@ -194,6 +155,18 @@ helpers.forEach(({ name, color, position, label }) => {
 const manager = new THREE.LoadingManager();
 manager.onLoad = function () {
   // This runs after ALL OBJ files are loaded
+  const wallNames = ['front', 'back', 'left', 'right'];
+  scene.traverse((child) => {
+    if (child.isMesh) {
+      const wallName = wallNames.find(name => child.name.toLowerCase().includes(name + '_wall')); // Adjust name matching
+      if (wallName) {
+        console.log(`DEBUG: Identified ${wallName} wall mesh:`, child.name, 'Setting visible=false'); // Re-enable log
+        child.visible = false; // Hide the wall initially
+        wallMeshes[wallName] = child; // Store reference
+        applyClippingPlanesToMesh(wallName, child); // Apply planes
+      }
+    }
+  });
 };
 
 // Debug: List all mesh names in an OBJ file
@@ -236,7 +209,7 @@ async function loadAndPositionPanel({
           if (child.isMesh) {
             // Check if this mesh should be removed
             if (shouldRemoveMesh(child.name)) {
-              console.log('Filtering out mesh:', child.name);
+              // console.log('Filtering out mesh:', child.name);
               meshesToRemove.push(child);
               return; // Skip material assignment for meshes that will be removed
             }
@@ -280,46 +253,311 @@ async function loadAndPositionPanel({
   });
 }
 
+// Helper function to animate a mesh dropping into place
+function animateDrop(mesh, targetY, duration, onComplete) {
+  const startY = mesh.position.y;
+  const startTime = Date.now();
+
+  function drop() {
+    const elapsedTime = Date.now() - startTime;
+    const progress = Math.min(elapsedTime / duration, 1);
+
+    // Simple easing (easeOutQuad)
+    const easedProgress = progress * (2 - progress);
+    mesh.position.y = startY + (targetY - startY) * easedProgress;
+
+    if (progress < 1) {
+      requestAnimationFrame(drop);
+    } else {
+      if (onComplete) onComplete();
+    }
+  }
+  requestAnimationFrame(drop);
+}
+
 // Panel/roof loading logic
 async function cookBuilding(scene, recipe) {
+  // --- Wall Loading (Provided in prompt) ---
   // Foundation
   const foundationMesh = createFoundation(recipe.depth, recipe.width);
   scene.add(foundationMesh);
 
-  // Wall panels
+  // Wall panels initialization (assuming wallMeshes is defined in outer scope)
+  // const wallMeshes = {}; 
+  
   const wallSides = ['front', 'back', 'left', 'right'];
+  const INCHES_TO_SCENE_UNITS = 1; // Assuming 1 OBJ unit = 1 scene unit (e.g., inches)
+  const FEET_TO_INCHES = 12;
+  
+  const dropHeight = 200; // Units to drop from
+  const animationDuration = 800; // Milliseconds for the drop animation
+  const sequenceDelay = 300; // milliseconds between each section starting its drop
+
   for (const side of wallSides) {
     const panel = recipe[side];
     if (!panel || !panel.obj) continue;
-    let rotation = { x: 0, y: 0, z: 0 };
-    // Match legacy orientation logic
-    if (side === 'right') rotation.y = Math.PI / 2;
-    if (side === 'left') rotation.y = -Math.PI / 2;
-    if (side === 'back' && recipe.model === 'portland') rotation.y = Math.PI;
-    await loadAndPositionPanel({
-      scene,
-      path: `/obj/${recipe.model}/${side}/`,
-      file: `${panel.obj}.obj`,
-      position: { x: panel.x, y: panel.y, z: panel.z },
-      rotation,
-      name: side
-    });
+
+    if (side === 'front' && recipe.model === 'signature') { // Hardcoded for signature front wall
+      // console.log("Loading hardcoded front wall sections, assuming pre-positioned geometry...");
+      // const frontWallSections = [
+      //   { file: 'F12-W2L-D72C-W2R_section_1.obj'},
+      //   { file: 'F12-W2L-D72C-W2R_section_2.obj'},
+      //   { file: 'F12-W2L-D72C-W2R_section_3.obj' }
+      // ];
+
+      // instead of hardcoding- we are going assume the file name is the panel + _section_ + section number + .obj and it is always going to be 3 sections
+      const frontWallSections = [
+        { file: `${panel.obj}_section_1.obj`},
+        { file: `${panel.obj}_section_2.obj`},
+        { file: `${panel.obj}_section_3.obj`}
+      ];
+      wallMeshes[side] = []; // Store front sections in an array
+
+      for (let i = 0; i < frontWallSections.length; i++) {
+        const section = frontWallSections[i];
+        const finalSectionPosition = {
+          x: panel.x, // Use the base panel.x for all sections
+          y: panel.y,
+          z: panel.z
+        };
+
+        console.log(`Loading section: ${section.file} to drop to:`, finalSectionPosition);
+        await loadAndPositionPanel({
+          scene,
+          path: `/obj/${recipe.model}/${side}/`, // Path to sections
+          file: section.file,
+          position: { ...finalSectionPosition, y: panel.y + dropHeight }, // Start higher
+          rotation: { x: 0, y: 0, z: 0 },
+          name: `${side}_section_${i + 1}`
+        }).then((obj) => {
+          obj.visible = true; // Make it visible at the starting (high) position
+          wallMeshes[side].push({ mesh: obj, targetY: panel.y }); // Store mesh and its final Y
+        });
+      }
+
+      // Sequentially animate the drop for front wall sections
+      wallMeshes[side].forEach((sectionData, index) => {
+        setTimeout(() => {
+          animateDrop(sectionData.mesh, sectionData.targetY, animationDuration);
+        }, index * sequenceDelay);
+      });
+
+    } else if (side === 'right' && recipe.model === 'signature') {
+      // console.log("Loading hardcoded RIGHT wall sections, using panel.rotation...");
+      // const rightWallSections = [
+      //   { file: 'R10-W2L-36C_section_1.obj', description: 'Section 1 of right wall' },
+      //   { file: 'R10-W2L-36C_section_2.obj', description: 'Section 2 of right wall' },
+      //   { file: 'R10-W2L-36C_section_3.obj', description: 'Section 3 of right wall' }
+      // ];
+      const rightWallSections = [
+        { file: `${panel.obj}_section_1.obj`},
+        { file: `${panel.obj}_section_2.obj`},
+        { file: `${panel.obj}_section_3.obj`}
+      ];
+      wallMeshes[side] = []; // Store right wall sections in an array
+
+      for (let i = 0; i < rightWallSections.length; i++) {
+        const section = rightWallSections[i];
+        const finalSectionPosition = {
+          x: panel.x, // Use the base panel.x for all sections
+          y: panel.y,
+          z: panel.z
+        };
+
+        console.log(`Loading RIGHT section: ${section.file} to drop to:`, finalSectionPosition, `with rotation:`, panel.rotation);
+        await loadAndPositionPanel({
+          scene,
+          path: `/obj/${recipe.model}/${side}/`, // Path to sections: /obj/signature/right/
+          file: section.file,
+          position: { ...finalSectionPosition, y: panel.y + dropHeight }, // Start higher
+          rotation: { x: 0, y: Math.PI / 2, z: 0 }, // Explicitly set rotation for the right wall
+          name: `${side}_section_${i + 1}`
+        }).then((obj) => {
+          obj.visible = true; // Make it visible at the starting (high) position
+          wallMeshes[side].push({ mesh: obj, targetY: panel.y }); // Store mesh and its final Y
+        });
+      }
+
+      // Sequentially animate the drop for right wall sections
+      wallMeshes[side].forEach((sectionData, index) => {
+        setTimeout(() => {
+          animateDrop(sectionData.mesh, sectionData.targetY, animationDuration);
+        }, index * sequenceDelay);
+      });
+    
+    } else if (side === 'left' && recipe.model === 'signature') {
+      // console.log("Loading hardcoded LEFT wall sections, using panel.rotation...");
+      // const leftWallSections = [
+      //   { file: 'L10-36C-W2R_section_1.obj', description: 'Section 1 of left wall' },
+      //   { file: 'L10-36C-W2R_section_2.obj', description: 'Section 2 of left wall' },
+      //   { file: 'L10-36C-W2R_section_3.obj', description: 'Section 3 of left wall' }
+      // ];
+      const leftWallSections = [
+        { file: `${panel.obj}_section_1.obj`},
+        { file: `${panel.obj}_section_2.obj`},
+        { file: `${panel.obj}_section_3.obj`}
+      ];
+
+      wallMeshes[side] = []; // Store left wall sections in an array
+
+      for (let i = 0; i < leftWallSections.length; i++) {
+        const section = leftWallSections[i];
+        const finalSectionPosition = {
+          x: panel.x, // Use the base panel.x for all sections
+          y: panel.y,
+          z: panel.z
+        };
+
+        console.log(`Loading LEFT section: ${section.file} to drop to:`, finalSectionPosition, `with rotation:`, panel.rotation);
+        await loadAndPositionPanel({
+          scene,
+          path: `/obj/${recipe.model}/${side}/`, // Path to sections: /obj/signature/left/
+          file: section.file,
+          position: { ...finalSectionPosition, y: panel.y + dropHeight }, // Start higher
+          rotation: { x: 0, y: -Math.PI / 2, z: 0 }, // Explicitly set rotation for the left wall
+          name: `${side}_section_${i + 1}`
+        }).then((obj) => {
+          obj.visible = true; // Make it visible at the starting (high) position
+          wallMeshes[side].push({ mesh: obj, targetY: panel.y }); // Store mesh and its final Y
+        });
+      }
+
+      // Sequentially animate the drop for left wall sections
+      wallMeshes[side].forEach((sectionData, index) => {
+        setTimeout(() => {
+          animateDrop(sectionData.mesh, sectionData.targetY, animationDuration);
+        }, index * sequenceDelay);
+      });
+
+    } else if (side === 'back' && recipe.model === 'signature') {
+      // console.log("Loading hardcoded BACK wall sections...");
+      // const backWallSections = [
+      //   { file: 'B10x12_section_1.obj', description: 'Section 1 of back wall' },
+      //   { file: 'B10x12_section_2.obj', description: 'Section 2 of back wall' },
+      //   { file: 'B10x12_section_3.obj', description: 'Section 3 of back wall' }
+      // ];
+      const backWallSections = [
+        { file: `${panel.obj}_section_1.obj`},
+        { file: `${panel.obj}_section_2.obj`},
+        { file: `${panel.obj}_section_3.obj`}
+      ];
+      wallMeshes[side] = []; // Store back wall sections in an array
+
+      for (let i = 0; i < backWallSections.length; i++) {
+        const section = backWallSections[i];
+        const finalSectionPosition = {
+          x: panel.x, // Use the base panel.x for all sections
+          y: panel.y,
+          z: panel.z
+        };
+
+        console.log(`Loading BACK section: ${section.file} to drop to:`, finalSectionPosition, `with rotation:`, panel.rotation);
+        await loadAndPositionPanel({
+          scene,
+          path: `/obj/${recipe.model}/${side}/`, // Path to sections: /obj/signature/back/
+          file: section.file,
+          position: { ...finalSectionPosition, y: panel.y + dropHeight }, // Start higher
+          rotation: { x: 0, y: 0, z: 0 }, // Explicitly set rotation for the back wall (no rotation needed)
+          name: `${side}_section_${i + 1}`
+        }).then((obj) => {
+          obj.visible = true; // Make it visible at the starting (high) position
+          wallMeshes[side].push({ mesh: obj, targetY: panel.y }); // Store mesh and its final Y
+        });
+      }
+
+      // Sequentially animate the drop for back wall sections
+      wallMeshes[side].forEach((sectionData, index) => {
+        setTimeout(() => {
+          animateDrop(sectionData.mesh, sectionData.targetY, animationDuration);
+        }, index * sequenceDelay);
+      });
+
+    } else {
+      // Existing logic for other walls or models
+      let rotation = { x: 0, y: 0, z: 0 };
+      // Match legacy orientation logic
+      if (side === 'right') rotation.y = -Math.PI / 2;
+      if (side === 'left') rotation.y = -Math.PI / 2;
+      if (side === 'back' && recipe.model === 'portland') rotation.y = Math.PI;
+      
+      await loadAndPositionPanel({
+        scene,
+        path: `/obj/${recipe.model}/${side}/`,
+        file: `${panel.obj}.obj`,
+        position: { x: panel.x, y: panel.y, z: panel.z },
+        rotation,
+        name: side
+      }).then((obj) => {
+        wallMeshes[side] = obj;
+        obj.visible = true; // Hide initially
+      });
+    }
   }
-  // Roof
+
+    // --- Roof Loading and Dropping Implementation ---
+
   if (recipe.roof && recipe.roof.obj) {
-    await loadAndPositionPanel({
-      scene,
-      path: `/obj/${recipe.model}/roof/`,
-      file: `${recipe.roof.obj}.obj`,
-      position: { x: recipe.roof.x, y: recipe.roof.y, z: recipe.roof.z },
-      //rotation: { x: 0, y: recipe.roof.rotation, z: 0 },
-      rotation: { x: 0, y: THREE.MathUtils.degToRad(recipe.roof.rotation), z: 0 },
-      name: 'roof'
+    let roofMeshes = [];
+    
+    // Define the components in the order they should be loaded and animated
+    const roofComponents = [
+      'drywall',
+      'eaves',
+      'framing',
+      'sheathing',
+      'trim-color'
+    ];
+
+    const roofBasePath = `/obj/${recipe.model}/roof/`;
+    const roofTargetY = recipe.roof.y;
+    // Assuming THREE.js is available for MathUtils.degToRad
+    const roofRotation = { x: 0, y: THREE.MathUtils.degToRad(recipe.roof.rotation || 0), z: 0 };
+
+    // 1. Load all roof components sequentially
+    for (const componentName of roofComponents) {
+      const fileName = `${recipe.roof.obj}-${componentName}.obj`;
+      const finalPosition = { x: recipe.roof.x, y: roofTargetY, z: recipe.roof.z };
+      
+      console.log(`Loading roof component: ${roofBasePath}${fileName}`);
+
+      await loadAndPositionPanel({
+        scene,
+        path: roofBasePath,
+        file: fileName,
+        // Start position is above the final position
+        position: { ...finalPosition, y: roofTargetY + dropHeight }, 
+        rotation: roofRotation,
+        name: `roof-${componentName}`
+      }).then((obj) => {
+        obj.visible = true; // Make visible at the starting (high) position
+        // Store the mesh and its final target Y position
+        roofMeshes.push({ mesh: obj, targetY: roofTargetY, componentName: componentName });
+      });
+    }
+
+    // 2. Calculate delay required to wait for wall animations to complete.
+    // Based on the wall logic: Max sections (3) * delay (300ms) + duration (800ms) = approx 1400-1700ms.
+    // We use 1500ms as a safe estimate for when the last wall panel settles.
+    const wallAnimationWaitTime = 1500; 
+
+    // 3. Sequentially animate the drop for roof components
+    roofMeshes.forEach((componentData, index) => {
+      // Calculate start time: wait for walls + (index * sequence delay for roof components)
+      const startTime = wallAnimationWaitTime + (index * sequenceDelay);
+      
+      setTimeout(() => {
+        console.log(`Dropping roof component: ${componentData.componentName}`);
+        animateDrop(componentData.mesh, componentData.targetY, animationDuration);
+      }, startTime);
     });
   }
-  // Do NOT call enablePlankSiding here; it is now handled by manager.onLoad
+  
 }
-//Generate the Signature recipe  and store it to recipe
+
+// Store wall meshes
+const wallMeshes = { front: null, back: null, left: null, right: null };
+
+// Generate the Signature recipe and store it to recipe
 let recipe = {
   model: 'signature',
   depth: 120,
@@ -346,10 +584,8 @@ window.addEventListener('resize', () => {
 // Animation loop
 function animate() {
   requestAnimationFrame(animate);
-  
   // Update controls
   if (controls) controls.update();
-  
   renderer.render(scene, camera);
 }
 animate();
@@ -401,7 +637,7 @@ renderer.domElement.addEventListener('click', (event) => {
       
       if (event.shiftKey) {
         // Shift + Click: Remove the mesh
-        console.log('Removing mesh:', meshName);
+        // console.log('Removing mesh:', meshName);
         mesh.parent.remove(mesh);
         // Show removal confirmation
         let overlay = document.getElementById('mesh-name-overlay');
@@ -432,7 +668,7 @@ renderer.domElement.addEventListener('click', (event) => {
         }, 1800);
       } else {
         // Regular Click: Show mesh name
-        console.log('Clicked mesh:', meshName);
+        // console.log('Clicked mesh:', meshName);
         let overlay = document.getElementById('mesh-name-overlay');
         if (!overlay) {
           overlay = document.createElement('div');
@@ -469,3 +705,6 @@ if (controls && controls.target) {
   controls.target.set(0, 30, 0);
   controls.update();
 }
+
+// UI / Event Listeners
+// (Reveal button logic removed - no more wall reveal animation)

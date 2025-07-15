@@ -1,6 +1,8 @@
 ## Overview
 This project is a self-contained, single-page web application that visually demonstrates the assembly process of our panelized building system using 3D animation. The app focuses on generating and animating the geometry for various structures.
 
+Search three.js docs to help find a suitable solution for Three.js specific features and functions
+
 ## Tech Stack
 - **HTML, Tailwind CSS, Alpine.js**: For UI, layout, and interactivity.
 - **Vanilla JavaScript**: For application logic and animation control.
@@ -31,7 +33,6 @@ General specifications for components using Three.js. Geometry is constructed pr
 
 ## Wall Panels
 - **General**: Represent standard wall panels. Variations exist (e.g., different heights, sloped tops for side walls, door/window openings) and should be modeled in Three.js as needed.
-- **Dimensions**: Use specified heights (e.g., 7'3.5" back, 8'6" front) and standard widths (e.g., 48"). Thickness is 5.5".
 - **Details**: Include basic visual representation of exterior sheathing and interior framing concept.
 
 ## Roof Components

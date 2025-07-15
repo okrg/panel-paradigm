@@ -137,7 +137,7 @@ class Environment {
 
   setupLighting() {
     // Main directional light (sun)
-    const sunLight = new THREE.DirectionalLight(0xfff6e5, 5.0);
+    const sunLight = new THREE.DirectionalLight(0xfff6e5, 7.0);
     sunLight.position.set(150, 200, 150);
     sunLight.castShadow = true;
     
@@ -155,7 +155,7 @@ class Environment {
     this.lightingGroup.add(sunLight);
     
     // Ambient light for general illumination
-    const ambientLight = new THREE.AmbientLight(0xeaf6ff, 0.7);
+    const ambientLight = new THREE.AmbientLight(0xeaf6ff, 1.5);
     this.lightingGroup.add(ambientLight);
     
     // Fill light from opposite side

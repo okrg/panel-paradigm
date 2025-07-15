@@ -505,7 +505,9 @@ def process_wall_file(filepath, output_dir, section_lengths_ft):
     except NotImplementedError as e:
          print(f"Error processing {filename}: Rule not implemented for this file pattern: {e}")
     except Exception as e:
-        print(f"An unexpected error occurred processing {filename}: {e}", exc_info=True) # Print traceback for unexpected errors
+        print(f"An unexpected error occurred processing {filename}: {e}")
+        import traceback
+        traceback.print_exc() # Print traceback for unexpected errors
 
 
 # --- Main execution ---
